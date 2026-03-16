@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>vena — 내 페이지</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&family=Poppins:wght@400;500;600&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+
+    body {
+      background: linear-gradient(180deg, #f7f8fc 0%, #eef2ff 100%);
+      font-family: "Inter", "Noto Sans KR", sans-serif;
+      color: #1f2a44;
+      min-height: 100vh;
+    }
+
+    button, input, textarea { font: inherit; }
+
+    .app {
+      max-width: 480px;
+      min-height: 100vh;
+      margin: 0 auto;
+      background: #f7f8fc;
+      position: relative;
+      padding-bottom: 40px;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 18px 18px 10px;
+    }
+
+    .back-btn {
+      width: 40px;
+      height: 40px;
+      border: none;
+      border-radius: 50%;
+      background: #ffffff;
+      box-shadow: 0 8px 20px rgba(31,42,68,0.08);
+      cursor: pointer;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .back-btn:active { transform: scale(0.96); }
+
+    .logo-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .logo-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #5b6cff;
+      box-shadow: 0 0 12px rgba(91,108,255,0.35);
+    }
+
+    .logo {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+
+    /* Main */
+    .main-content { padding: 0 16px; }
+
+    .page-title-card {
+      background: linear-gradient(135deg, #5b6cff 0%, #7f8cff 100%);
+      border-radius: 24px;
+      padding: 22px 20px;
+      margin-bottom: 16px;
+      color: #fff;
+    }
+
+    .page-eyebrow {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      opacity: 0.75;
+      margin: 0 0 6px;
+    }
+
+    .page-title {
+      margin: 0 0 16px;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .stats-row {
+      display: flex;
+      gap: 12px;
+    }
+
+    .stat-box {
+      background: rgba(255,255,255,0.18);
+      border-radius: 14px;
+      padding: 10px 16px;
+      text-align: center;
+      flex: 1;
+    }
+
+    .stat-num {
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      opacity: 0.8;
+      margin-top: 4px;
+    }
+
+    /* Section cards */
+    .section-card {
+      background: #ffffff;
+      border-radius: 24px;
+      padding: 18px 16px;
+      box-shadow: 0 12px 32px rgba(31,42,68,0.08);
+      margin-bottom: 16px;
+    }
+
+    .section-label {
+      margin: 0 0 4px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #7f8aac;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .section-title {
+      margin: 0 0 16px;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    /* 통합 지도 */
+    .map-wrap {
+      overflow: hidden;
+      border-radius: 20px;
+    }
+
+    .map {
+      width: 100%;
+      height: 280px;
+      border: 0;
+      display: block;
+    }
+
+    .map-hint {
+      margin-top: 10px;
+      font-size: 12px;
+      color: #7f8aac;
+      text-align: center;
+    }
+
+    /* 로그 목록 */
+    .log-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .log-item {
+      background: #f4f6ff;
+      border-radius: 18px;
+      padding: 14px;
+      cursor: pointer;
+      transition: 0.2s ease;
+      border: 2px solid transparent;
+    }
+
+    .log-item:active { transform: scale(0.99); }
+    .log-item.active { border-color: #5b6cff; background: #eef1ff; }
+
+    .log-item-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .log-content {
+      font-size: 15px;
+      font-weight: 600;
+      color: #1f2a44;
+      line-height: 1.45;
+      flex: 1;
+      word-break: break-word;
+    }
+
+    .log-pin-btn {
+      flex-shrink: 0;
+      border: none;
+      background: #5b6cff;
+      color: #fff;
+      padding: 7px 12px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .log-pin-btn:active { transform: scale(0.96); }
+
+    .log-meta {
+      display: flex;
+      gap: 10px;
+      font-size: 12px;
+      color: #7f8aac;
+      flex-wrap: wrap;
+    }
+
+    /* 개별 지도 패널 */
+    .log-map-panel {
+      display: none;
+      margin-top: 10px;
+      overflow: hidden;
+      border-radius: 14px;
+    }
+
+    .log-map-panel.open { display: block; }
+
+    .log-map-panel iframe {
+      width: 100%;
+      height: 200px;
+      border: 0;
+      display: block;
+    }
+
+    /* 빈 상태 */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: #7f8aac;
+    }
+
+    .empty-state .empty-icon {
+      font-size: 40px;
+      margin-bottom: 12px;
+    }
+
+    .empty-state p {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .go-home-btn {
+      display: inline-block;
+      margin-top: 16px;
+      background: linear-gradient(135deg, #5b6cff 0%, #7f8cff 100%);
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 700;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <button class="back-btn" onclick="history.back()">←</button>
+      <div class="logo-wrap">
+        <div class="logo-dot"></div>
+        <h1 class="logo">vena</h1>
+      </div>
+    </header>
+
+    <main class="main-content">
+
+      <!-- 타이틀 + 통계 -->
+      <div class="page-title-card">
+        <p class="page-eyebrow">My Page</p>
+        <h2 class="page-title">내 여행 기록</h2>
+        <div class="stats-row">
+          <div class="stat-box">
+            <div class="stat-num" id="statTotal">0</div>
+            <div class="stat-label">총 로그</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-num" id="statLocations">0</div>
+            <div class="stat-label">방문 위치</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 통합 지도 -->
+      <div class="section-card" id="mapCard">
+        <p class="section-label">Map</p>
+        <h3 class="section-title">전체 기록 지도</h3>
+        <div class="map-wrap">
+          <iframe id="allMapFrame" class="map" title="전체 기록 지도"
+            src="https://www.google.com/maps?q=Seoul&output=embed" loading="lazy"></iframe>
+        </div>
+        <p class="map-hint">📍 로그를 클릭하면 해당 위치로 이동해요</p>
+      </div>
+
+      <!-- 로그 목록 -->
+      <div class="section-card">
+        <p class="section-label">Log</p>
+        <h3 class="section-title">내 로그 목록</h3>
+        <div class="log-list" id="logList"></div>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    const logs = JSON.parse(localStorage.getItem("vena_logs") || "[]");
+
+    // 통계
+    document.getElementById("statTotal").textContent = logs.length;
+    const uniqueLocs = new Set(logs.map(l => l.lat + "," + l.lng)).size;
+    document.getElementById("statLocations").textContent = uniqueLocs;
+
+    // 통합 지도: 첫 번째 로그 위치로 초기화
+    if (logs.length > 0) {
+      document.getElementById("allMapFrame").src =
+        "https://www.google.com/maps?q=" + logs[0].lat + "," + logs[0].lng + "&output=embed";
+    }
+
+    // 로그 목록 렌더링
+    const logList = document.getElementById("logList");
+
+    if (logs.length === 0) {
+      logList.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">🗺️</div>
+          <p>아직 저장된 로그가 없어요.<br>여행 중 문장을 기록해보세요!</p>
+          <a href="index.html" class="go-home-btn">홈으로 가기</a>
+        </div>
+      `;
+    } else {
+      logs.forEach(function (log, idx) {
+        const item = document.createElement("div");
+        item.className = "log-item";
+        item.id = "logItem_" + idx;
+
+        item.innerHTML = `
+          <div class="log-item-top">
+            <p class="log-content">${escapeHtml(log.text)}</p>
+            <button class="log-pin-btn" onclick="focusMap(${log.lat}, ${log.lng}, ${idx})">📍 지도</button>
+          </div>
+          <div class="log-meta">
+            <span>🕒 ${log.date}</span>
+            <span>📍 ${log.lat}, ${log.lng}</span>
+          </div>
+          <div class="log-map-panel" id="mapPanel_${idx}">
+            <iframe
+              src="https://www.google.com/maps?q=${log.lat},${log.lng}&output=embed"
+              loading="lazy"
+            ></iframe>
+          </div>
+        `;
+
+        logList.appendChild(item);
+      });
+    }
+
+    let activeIdx = null;
+
+    function focusMap(lat, lng, idx) {
+      // 통합 지도 이동
+      document.getElementById("allMapFrame").src =
+        "https://www.google.com/maps?q=" + lat + "," + lng + "&output=embed";
+
+      // 통합 지도로 스크롤
+      document.getElementById("mapCard").scrollIntoView({ behavior: "smooth", block: "start" });
+
+      // 개별 지도 패널 토글
+      if (activeIdx !== null && activeIdx !== idx) {
+        document.getElementById("mapPanel_" + activeIdx).classList.remove("open");
+        document.getElementById("logItem_" + activeIdx).classList.remove("active");
+      }
+
+      const panel = document.getElementById("mapPanel_" + idx);
+      const item = document.getElementById("logItem_" + idx);
+
+      if (activeIdx === idx) {
+        panel.classList.remove("open");
+        item.classList.remove("active");
+        activeIdx = null;
+      } else {
+        panel.classList.add("open");
+        item.classList.add("active");
+        activeIdx = idx;
+      }
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.innerText = text;
+      return div.innerHTML;
+    }
+  </script>
+</body>
+</html>

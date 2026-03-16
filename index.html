@@ -22,7 +22,7 @@
         <div class="logo-dot"></div>
         <h1 class="logo">vena</h1>
       </div>
-      <button class="icon-btn" aria-label="내 페이지">👤</button>
+      <a href="mypage.html" class="icon-btn" aria-label="내 페이지" style="display:flex;align-items:center;justify-content:center;text-decoration:none;">👤</a>
     </header>
 
     <main class="main-content">
@@ -110,21 +110,27 @@
     </nav>
   </div>
 
-  <script>
+ <script>
   let currentLat = null;
   let currentLng = null;
+
+  // 페이지 로드 시 저장된 로그 불러오기
+  window.addEventListener("DOMContentLoaded", function () {
+    const saved = JSON.parse(localStorage.getItem("vena_logs") || "[]");
+    saved.forEach(function (log) {
+      renderLogItem(log);
+    });
+  });
 
   function getLocation() {
     if (!navigator.geolocation) {
       alert("이 브라우저에서는 위치 기능을 지원하지 않습니다.");
       return;
     }
-
     navigator.geolocation.getCurrentPosition(
       function (pos) {
         currentLat = pos.coords.latitude;
         currentLng = pos.coords.longitude;
-
         moveMap(currentLat, currentLng);
       },
       function () {
@@ -159,34 +165,61 @@
 
     const now = new Date();
     const dateText =
-      now.getFullYear() +
-      "." +
-      String(now.getMonth() + 1).padStart(2, "0") +
-      "." +
-      String(now.getDate()).padStart(2, "0") +
-      " " +
-      String(now.getHours()).padStart(2, "0") +
-      ":" +
+      now.getFullYear() + "." +
+      String(now.getMonth() + 1).padStart(2, "0") + "." +
+      String(now.getDate()).padStart(2, "0") + " " +
+      String(now.getHours()).padStart(2, "0") + ":" +
       String(now.getMinutes()).padStart(2, "0");
 
-    const latText = currentLat.toFixed(4);
-    const lngText = currentLng.toFixed(4);
+    const logData = {
+      id: Date.now(),
+      date: dateText,
+      lat: currentLat.toFixed(4),
+      lng: currentLng.toFixed(4),
+      text: text,
+    };
 
+    // localStorage에 저장
+    const saved = JSON.parse(localStorage.getItem("vena_logs") || "[]");
+    saved.unshift(logData);
+    localStorage.setItem("vena_logs", JSON.stringify(saved));
+
+    renderLogItem(logData, true);
+    input.value = "";
+  }
+
+  function renderLogItem(log, prepend = false) {
     const logList = document.getElementById("logList");
     const logItem = document.createElement("div");
     logItem.className = "log-item";
+    logItem.dataset.id = log.id;
 
     logItem.innerHTML = `
-      <p class="log-date">🕒 ${dateText}</p>
-      <p class="log-location">📍 ${latText}, ${lngText}</p>
-      <p class="log-content">${escapeHtml(text)}</p>
-      <button class="view-map-btn" onclick="moveMap(${currentLat}, ${currentLng})">
-        지도에서 보기
-      </button>
+      <p class="log-date">🕒 ${log.date}</p>
+      <p class="log-location">📍 ${log.lat}, ${log.lng}</p>
+      <p class="log-content">${escapeHtml(log.text)}</p>
+      <div style="display:flex; gap:8px; margin-top:10px;">
+        <button class="view-map-btn" onclick="moveMap(${log.lat}, ${log.lng})">지도에서 보기</button>
+        <button class="view-map-btn" style="background:#fff0f0; color:#e05555;" onclick="deleteLog(${log.id})">삭제</button>
+      </div>
     `;
 
-    logList.prepend(logItem);
-    input.value = "";
+    if (prepend) {
+      logList.prepend(logItem);
+    } else {
+      logList.appendChild(logItem);
+    }
+  }
+
+  function deleteLog(id) {
+    // DOM에서 제거
+    const el = document.querySelector(`.log-item[data-id="${id}"]`);
+    if (el) el.remove();
+
+    // localStorage에서도 제거
+    const saved = JSON.parse(localStorage.getItem("vena_logs") || "[]");
+    const updated = saved.filter(function (log) { return log.id !== id; });
+    localStorage.setItem("vena_logs", JSON.stringify(updated));
   }
 
   function escapeHtml(text) {
