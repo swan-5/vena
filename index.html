@@ -30,7 +30,7 @@
         <div class="hero-top">
           <div>
             <p class="eyebrow">Travel phrase map</p>
-            <h2 class="hero-title"> 여행 언어 기록 </h2>
+            <h2 class="hero-title"> 내 언어 위치 </h2>
           </div>
           <button class="location-btn" onclick="getLocation()">📍 내 위치</button>
         </div>
@@ -50,7 +50,7 @@
         <div class="section-head">
           <div>
             <p class="section-label">Phrases</p>
-            <h3 class="section-title">상황에 맞는 추천 문장</h3>
+            <h3 class="section-title">장소에 맞는 추천 문장</h3>
           </div>
         </div>
 
@@ -85,15 +85,23 @@
         <div class="section-head">
           <div>
             <p class="section-label">My log</p>
-            <h3 class="section-title">내 로그 남기기</h3>
+            <h3 class="section-title">로그 작성하기</h3>
           </div>
         </div>
 
-        <label class="input-label" for="logInput">오늘 사용한 문장이나 메모를 적어보세요</label>
+        <label class="input-label" for="logInput">이곳에서 사용한 문장을 기록하세요</label>
         <textarea
           id="logInput"
           class="log-input"
           placeholder="예: Where is the restroom? / 서울역에서 급하게 물어봄"
+        ></textarea>
+
+        <label class="input-label" for="memoInput" style="margin-top: 12px;">메모</label>
+        <textarea
+          id="memoInput"
+          class="log-input"
+          style="min-height: 80px;"
+          placeholder="추가로 기억하고 싶은 내용을 남겨보세요"
         ></textarea>
 
         <button class="save-btn" onclick="saveLog()">저장하기</button>
@@ -102,12 +110,7 @@
       </section>
     </main>
 
-    <nav class="tabbar">
-      <button class="tab active">Map</button>
-      <button class="tab">Phrases</button>
-      <button class="tab">Log</button>
-      <button class="tab">My</button>
-    </nav>
+   
   </div>
 
  <script>
@@ -151,7 +154,9 @@
 
   function saveLog() {
     const input = document.getElementById("logInput");
+    const memoInput = document.getElementById("memoInput");
     const text = input.value.trim();
+    const memo = memoInput.value.trim();
 
     if (text === "") {
       alert("로그 내용을 입력해주세요.");
@@ -177,6 +182,7 @@
       lat: currentLat.toFixed(4),
       lng: currentLng.toFixed(4),
       text: text,
+      memo: memo,
     };
 
     // localStorage에 저장
@@ -186,6 +192,7 @@
 
     renderLogItem(logData, true);
     input.value = "";
+    memoInput.value = "";
   }
 
   function renderLogItem(log, prepend = false) {
@@ -195,9 +202,10 @@
     logItem.dataset.id = log.id;
 
     logItem.innerHTML = `
-      <p class="log-date">🕒 ${log.date}</p>
+      <p class="log-date"> ${log.date}</p>
       <p class="log-location">📍 ${log.lat}, ${log.lng}</p>
       <p class="log-content">${escapeHtml(log.text)}</p>
+      ${log.memo ? `<p class="log-memo"> ${escapeHtml(log.memo)}</p>` : ""}
       <div style="display:flex; gap:8px; margin-top:10px;">
         <button class="view-map-btn" onclick="moveMap(${log.lat}, ${log.lng})">지도에서 보기</button>
         <button class="view-map-btn" style="background:#fff0f0; color:#e05555;" onclick="deleteLog(${log.id})">삭제</button>

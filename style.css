@@ -274,35 +274,17 @@ textarea {
   word-break: break-word;
 }
 
-/* Tabbar */
-.tabbar {
-  position: fixed;
-  left: 50%;
-  bottom: 0;
-  transform: translateX(-50%);
-  width: 100%;
-  max-width: 480px;
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  padding: 12px 10px calc(12px + env(safe-area-inset-bottom));
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(14px);
-  border-top: 1px solid rgba(220, 226, 240, 0.9);
-}
-
-.tab {
-  border: none;
-  background: transparent;
-  color: #7c86a6;
+.log-memo {
+  margin: 8px 0 0;
   font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
+  line-height: 1.5;
+  color: #6e7896;
+  word-break: break-word;
+  padding: 8px 12px;
+  background: #f0f3ff;
+  border-radius: 10px;
 }
 
-.tab.active {
-  color: #4254e8;
-}
 
 /* Responsive */
 @media (max-width: 360px) {
