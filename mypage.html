@@ -11,6 +11,8 @@
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&family=Poppins:wght@400;500;600&display=swap"
     rel="stylesheet"
   />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <style>
     * { box-sizing: border-box; }
@@ -365,14 +367,14 @@
         </div>
 
         <div class="map-wrap">
-          <iframe id="allMapFrame" class="map" title="Where I've been"
-            src="https://www.google.com/maps?q=0,0&z=2&output=embed" loading="lazy"></iframe>
+          <div id="leafletMap" style="width:100%; height:280px; border-radius:20px; overflow:hidden;"></div>
         </div>
+        <p class="map-hint">📍 로그를 클릭하면 해당 위치로 이동해요</p>
       </div>
 
       <!-- 로그 목록 -->
       <div class="section-card">
-        <p class="section-label">Log lists</p>
+        <p class="section-label">Log</p>
         <h3 class="section-title">내 로그 목록</h3>
         <div class="log-list" id="logList"></div>
       </div>
@@ -388,66 +390,80 @@
     const uniqueLocs = new Set(logs.map(l => l.lat + "," + l.lng)).size;
     document.getElementById("statLocations").textContent = uniqueLocs;
 
-    // 현재 지도 뷰 상태
-    let currentView = "world";
+    // ── Leaflet 지도 초기화 ──
+    const map = L.map("leafletMap", { zoomControl: true }).setView([20, 0], 2);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "© OpenStreetMap contributors",
+      maxZoom: 19
+    }).addTo(map);
+
+    // 로그 마커 추가
+    const markerIcon = L.divIcon({
+      className: "",
+      html: `<div style="width:12px;height:12px;background:#5b6cff;border:2px solid #fff;border-radius:50%;box-shadow:0 2px 6px rgba(91,108,255,0.5);"></div>`,
+      iconSize: [12, 12],
+      iconAnchor: [6, 6]
+    });
+
+    logs.forEach(function(log) {
+      L.marker([parseFloat(log.lat), parseFloat(log.lng)], { icon: markerIcon })
+        .addTo(map)
+        .bindPopup("<b>" + log.text + "</b><br><small>" + log.date + "</small>");
+    });
+
+    // 현재 위치 상태
     let userLat = null;
     let userLng = null;
-    let userCountry = null;
+    let userMarker = null;
 
-    // 위치 정보 미리 가져오기
+    // 위치 가져오기
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(function(pos) {
         userLat = pos.coords.latitude;
         userLng = pos.coords.longitude;
 
-        // 역지오코딩으로 나라 이름 가져오기
-        fetch("https://nominatim.openstreetmap.org/reverse?lat=" + userLat + "&lon=" + userLng + "&format=json")
-          .then(r => r.json())
-          .then(data => {
-            userCountry = data.address.country || null;
-          })
-          .catch(() => { userCountry = null; });
+        // 내 위치 마커 (파란 점)
+        userMarker = L.circleMarker([userLat, userLng], {
+          radius: 8,
+          fillColor: "#4254e8",
+          color: "#fff",
+          weight: 2,
+          fillOpacity: 1
+        }).addTo(map).bindPopup("📍 내 현재 위치");
       });
     }
 
+    // ── 탭 전환 ──
     function setMapView(view, btn) {
-      // 탭 활성화
       document.querySelectorAll(".map-tab").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
-      currentView = view;
-
-      const frame = document.getElementById("allMapFrame");
 
       if (view === "world") {
-        // 세계지도: 전체 줌아웃
-        frame.src = "https://www.google.com/maps?q=0,0&z=2&output=embed";
+        map.setView([20, 0], 2);
 
       } else if (view === "country") {
-        // 내 나라: 위치 기반 나라 or 로그 첫 번째 위치 기반
-        if (userCountry) {
-          frame.src = "https://www.google.com/maps?q=" + encodeURIComponent(userCountry) + "&output=embed";
-        } else if (userLat && userLng) {
-          frame.src = "https://www.google.com/maps?q=" + userLat + "," + userLng + "&z=6&output=embed";
+        if (userLat && userLng) {
+          map.setView([userLat, userLng], 6);
         } else if (logs.length > 0) {
-          frame.src = "https://www.google.com/maps?q=" + logs[0].lat + "," + logs[0].lng + "&z=6&output=embed";
-        } else {
-          frame.src = "https://www.google.com/maps?q=Korea&output=embed";
+          map.setView([parseFloat(logs[0].lat), parseFloat(logs[0].lng)], 6);
         }
 
       } else if (view === "local") {
-        // 내 위치: 정확한 현재 위치
         if (userLat && userLng) {
-          frame.src = "https://www.google.com/maps?q=" + userLat + "," + userLng + "&z=15&output=embed";
+          map.setView([userLat, userLng], 15);
+          if (userMarker) userMarker.openPopup();
         } else if (logs.length > 0) {
-          frame.src = "https://www.google.com/maps?q=" + logs[0].lat + "," + logs[0].lng + "&z=15&output=embed";
+          map.setView([parseFloat(logs[0].lat), parseFloat(logs[0].lng)], 15);
         } else {
           alert("위치 정보를 가져올 수 없어요. 브라우저 위치 권한을 확인해주세요.");
         }
       }
     }
 
-    // 로그 목록 렌더링
+    // ── 로그 목록 렌더링 ──
     const logList = document.getElementById("logList");
+    let activeIdx = null;
 
     if (logs.length === 0) {
       logList.innerHTML = `
@@ -458,7 +474,7 @@
         </div>
       `;
     } else {
-      logs.forEach(function (log, idx) {
+      logs.forEach(function(log, idx) {
         const item = document.createElement("div");
         item.className = "log-item";
         item.id = "logItem_" + idx;
@@ -473,50 +489,38 @@
             <span>🕒 ${log.date}</span>
             <span>📍 ${log.lat}, ${log.lng}</span>
           </div>
-          <div class="log-map-panel" id="mapPanel_${idx}">
-            <iframe
-              src="https://www.google.com/maps?q=${log.lat},${log.lng}&output=embed"
-              loading="lazy"
-            ></iframe>
-          </div>
         `;
 
         logList.appendChild(item);
       });
     }
 
-    let activeIdx = null;
-
     function focusMap(lat, lng, idx) {
-      // 통합 지도 이동 (내 위치 탭으로 전환)
-      const frame = document.getElementById("allMapFrame");
-      frame.src = "https://www.google.com/maps?q=" + lat + "," + lng + "&z=15&output=embed";
+      // 지도 이동
+      map.setView([parseFloat(lat), parseFloat(lng)], 15);
 
-      // 탭도 내 위치로 활성화
+      // 내 위치 탭 활성화
       document.querySelectorAll(".map-tab").forEach(b => b.classList.remove("active"));
       document.querySelectorAll(".map-tab")[2].classList.add("active");
 
-      // 통합 지도로 스크롤
+      // 맵 카드로 스크롤
       document.getElementById("mapCard").scrollIntoView({ behavior: "smooth", block: "start" });
 
-      // 개별 지도 패널 토글
+      // 로그 아이템 활성화 토글
       if (activeIdx !== null && activeIdx !== idx) {
-        document.getElementById("mapPanel_" + activeIdx).classList.remove("open");
         document.getElementById("logItem_" + activeIdx).classList.remove("active");
       }
-
-      const panel = document.getElementById("mapPanel_" + idx);
       const item = document.getElementById("logItem_" + idx);
-
       if (activeIdx === idx) {
-        panel.classList.remove("open");
         item.classList.remove("active");
         activeIdx = null;
       } else {
-        panel.classList.add("open");
         item.classList.add("active");
         activeIdx = idx;
       }
+
+      // 지도 크기 재계산 (스크롤 후 타일 깨짐 방지)
+      setTimeout(function() { map.invalidateSize(); }, 300);
     }
 
     function escapeHtml(text) {
